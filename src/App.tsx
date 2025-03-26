@@ -1,35 +1,66 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Button, Flex, Input, Box, Text, Spinner } from "@chakra-ui/react";
+import axios from "axios";
+import { useState } from "react";
+
+const baseURL = "http://localhost:3000/llm/talk";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [prompt, setPrompt] = useState<string>("");
+  const [response, setResponse] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleRun = async () => {
+    try {
+      setLoading(true);
+      setResponse("");
+      const request = await axios.post(baseURL, { prompt });
+      const data = request.data;
+      setResponse(data);
+    } catch (error) {
+      alert("Something went wrong");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Flex
+      direction="column"
+      align="center"
+      justify="flex-start"
+      gap="24px"
+      minH="100vh"
+      p="40px"
+    >
+      <Text fontSize="3xl" fontWeight="bold">
+        LLM Prompt Playground
+      </Text>
+
+      <Flex gap="16px" w="100%" maxW="600px">
+        <Input
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Enter your prompt..."
+        />
+        <Button onClick={handleRun} loading={loading} loadingText="Asking...">
+          Ask
+        </Button>
+      </Flex>
+
+      <Box w="100%" maxW="600px" p="20px" borderRadius="md" minH="150px">
+        {loading ? (
+          <Flex align="center" justify="center">
+            <Spinner size="lg" />
+          </Flex>
+        ) : response ? (
+          <Text whiteSpace="pre-wrap">{response}</Text>
+        ) : (
+          <Text color="gray.400">Response will appear here...</Text>
+        )}
+      </Box>
+    </Flex>
+  );
 }
 
-export default App
+export default App;
